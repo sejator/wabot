@@ -1,0 +1,103 @@
+<%- include("head") %>
+
+  <form class="col-lg-6 col-md-8 col-10 mx-auto" id="form-registrasi">
+    <div class="mx-auto text-center my-4">
+      <h2 class="my-3">
+        <%= title %>
+      </h2>
+    </div>
+    <div class="form-group">
+      <label for="name">Nama</label>
+      <input type="text" class="form-control" id="name" name="name">
+      <div id="name-info" class="is-invalid"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group col-md-6">
+        <label for="whatsapp">No Whatsapp</label>
+        <input type="text" id="whatsapp" name="whatsapp" class="form-control" placeholder="081295018xxx">
+      </div>
+      <div class="form-group col-md-6">
+        <label for="email">Alamat Email</label>
+        <input type="email" id="email" name="email" class="form-control">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group col-md-6">
+        <label for="password">Kata Sandi</label>
+        <input type="password" class="form-control" id="password" name="password">
+      </div>
+      <div class="form-group col-md-6">
+        <label for="konfir_password">Konfirmasi Kata Sandi</label>
+        <input type="password" class="form-control" id="konfir_password" name="konfir_password">
+      </div>
+    </div>
+    <button class="btn btn-primary btn-block" type="submit" id="btn-registrasi">DAFTAR</button>
+    <div class="text-center mt-3">
+      <a class="small" href="/auth">Sudah punya akun? Silahkan Login!</a>
+    </div>
+    <p class="mt-4 mb-3 text-muted text-center">&copy; 2023</p>
+  </form>
+  <script>
+    $('#btn-registrasi').on('click', function (e) {
+      e.preventDefault()
+      const form = $('#form-registrasi')
+      form.validate({
+        errorElement: 'div',
+        errorClass: 'is-invalid',
+        rules: {
+          name: "required",
+          whatsapp: "required",
+          email: {
+            required: true,
+            email: true,
+          },
+          password: {
+            required: true,
+            minlength: 6
+          },
+          konfir_password: {
+            required: true,
+            equalTo: "#password"
+          }
+        },
+      })
+
+      if (form.valid()) {
+        $.ajax({
+          type: 'post',
+          url: form.prop('action'),
+          data: form.serialize(),
+          beforeSend: (res) => {
+            $('#btn-registrasi').prop('disabled', true).text('LOADING...')
+          },
+          success: (res) => {
+            if (res.ok) {
+              $('input').prop('readonly', true)
+              swal({
+                title: "Sukses",
+                text: res.data.message,
+                icon: 'success'
+              }).then((value) => {
+                window.location.href = `${SITE_URL}/auth`
+              })
+            }
+          },
+          error: (xhr, status, pesan) => {
+            $('#btn-registrasi').prop('disabled', false).text('DAFTAR')
+            if (xhr.status == 400) {
+              const res = xhr.responseJSON
+              const el = res.errors
+              Object.keys(el).forEach((i, val) => {
+                swal("Error", el[i].message, "error");
+              })
+            } else {
+              console.log(xhr)
+              swal("Error", pesan, "error");
+            }
+          },
+        })
+      }
+    })
+  </script>
+
+  <%- include("footer") %>

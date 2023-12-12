@@ -1,0 +1,80 @@
+<%- include('header') %>
+  <div class="row justify-content-center">
+    <div class="col-12">
+      <h2 class="mb-2 page-title">
+        <%= title %>
+      </h2>
+      <div class="row my-4">
+        <!-- Small table -->
+        <div class="col-md-12">
+          <div class="card shadow">
+            <div class="card-body">
+              <!-- table -->
+              <table class="table datatables" id="tabel-device">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Tanggal</th>
+                    <th>No Invoice</th>
+                    <th>Device Key</th>
+                    <th>Nama Device</th>
+                    <th>No Whatsapp</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% invoices.forEach((row, i)=> { %>
+                    <tr>
+                      <td>
+                        <%= i + 1 %>
+                      </td>
+                      <td>
+                        <%= moment(row.createdAt).format('D-MM-YYYY HH:mm:ss'); %>
+                      </td>
+                      <td>
+                        <%= row.kode %>
+                      </td>
+                      <td>
+                        <%= row.devices.key %>
+                      </td>
+                      <td>
+                        <%= row.devices.name %>
+                      </td>
+                      <td>
+                        <%= row.devices.number %>
+                      </td>
+                      <td>
+                        <%= new Intl.NumberFormat("id-ID", { style: "currency" , currency: "IDR", maximumSignificantDigits: 3 }).format(row.total) %>
+                      </td>
+                      <td>
+                        <% let color='badge-danger' %>
+                          <% if (row.status=='PAID' ) { %>
+                            <% color='badge-success' %>
+                              <% } %>
+                                <span class="badge <%= color %> p-2">
+                                  <%= row.status %>
+                                </span>
+                      </td>
+                      <td>
+                        <a class="btn btn-sm btn-outline-primary" href="/subscription/invoice/<%= row.uuid %>">Detail</a>
+                      </td>
+                    </tr>
+                    <% }) %>
+
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div> <!-- simple table -->
+      </div> <!-- end section -->
+    </div> <!-- .col-12 -->
+  </div> <!-- .row -->
+
+  <script>
+    $(document).ready(function () {
+      $('#tabel-device').DataTable()
+    })
+  </script>
+  <%- include('footer') %>

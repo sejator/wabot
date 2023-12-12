@@ -1,0 +1,71 @@
+<%- include('header') %>
+  <div class="row justify-content-center">
+    <div class="col-12">
+      <h2 class="mb-2 page-title">
+        <%= title %>
+      </h2>
+      <div class="row my-4">
+        <!-- Small table -->
+        <div class="col-md-12">
+          <div class="card shadow">
+            <div class="card-header">
+              <div class="d-flex">
+                <h4 class="header-title mr-auto">List Users</h4>
+              </div>
+
+            </div>
+            <div class="card-body">
+              <!-- table -->
+              <table class="table datatables" id="tabel-device">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Nama</th>
+                    <th>Email</th>
+                    <th>No Whatsapp</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% users.forEach((row, i)=> { %>
+                    <tr>
+                      <td>
+                        <%= i + 1 %>
+                      </td>
+                      <td>
+                        <%= row.name %>
+                      </td>
+                      <td>
+                        <%= row.email %>
+                      </td>
+                      <td>
+                        <%= row.whatsapp %>
+                      </td>
+                      <td>
+                        <% if (row.status) { %>
+                          <span class="badge badge-success p-2">Aktif</span>
+                          <% } else { %>
+                            <span class="badge badge-secondary p-2">Non Aktif</span>
+                            <% } %>
+                      </td>
+                      <td>
+                        <a class="btn btn-sm btn-outline-success" href="/admin/setting/user/edit/<%= row.id %>">Edit</a>
+                      </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div> <!-- simple table -->
+      </div> <!-- end section -->
+    </div> <!-- .col-12 -->
+  </div> <!-- .row -->
+
+  <script>
+    $(document).ready(function () {
+      $('#tabel-device').DataTable()
+    })
+  </script>
+  <%- include('footer') %>

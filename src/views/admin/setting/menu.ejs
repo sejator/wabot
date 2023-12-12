@@ -1,0 +1,463 @@
+<%- include('header') %>
+  <div class="row justify-content-center">
+    <div class="col-12">
+      <h2 class="mb-2 page-title">
+        <%= title %>
+      </h2>
+      <div class="row my-4">
+        <!-- Small table -->
+        <div class="col-md-12">
+          <div class="card shadow">
+            <div class="card-body">
+              <div class="toolbar row mb-3">
+                <div class="col">
+                  <button class="btn btn-primary" data-toggle="modal" data-target="#modalAdd">Tambah</button>
+                </div>
+              </div>
+              <!-- table -->
+              <table class="table datatables">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Main</th>
+                    <th>Icon</th>
+                    <th>Link</th>
+                    <th>Urut</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% menus.forEach((menu, i)=> { %>
+                    <tr>
+                      <td>
+                        <%= i + 1 %>
+                      </td>
+                      <td>
+                        <%= menu.main %>
+                      </td>
+                      <td>
+                        <%= menu.icon %>
+                      </td>
+                      <td>
+                        <%= menu.link %>
+                      </td>
+                      <td>
+                        <%= menu.urut %>
+                      </td>
+                      <td>
+                        <button type="button" class="btn btn-outline-primary btn-sm btn-edit" data-json="<%= JSON.stringify(menu) %>">Edit</button>
+                        <button type="button" class="btn btn-outline-success btn-sm submenu" data-id="<%= menu.id %>">Submenu</button>
+                      </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div> <!-- simple table -->
+      </div> <!-- end section -->
+    </div> <!-- .col-12 -->
+  </div> <!-- .row -->
+
+  <!-- modal add menu -->
+  <div class="modal modal-blur fade show" id="modalAdd" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Tambah Menu</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="formAdd">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="main">Main Menu</label>
+              <input type="text" class="form-control" id="main" name="main">
+            </div>
+            <div class="form-group">
+              <label for="icon">Icon</label>
+              <input type="text" class="form-control" id="icon" name="icon">
+            </div>
+            <div class="form-group">
+              <label for="link">Link</label>
+              <input type="text" class="form-control" id="link" name="link" value="#">
+            </div>
+            <div class="form-group">
+              <label for="urut">Urut</label>
+              <select name="urut" id="urut" class="form-control">
+                <% for( let index=1; index <=10; index++ ) { %>
+                  <option value="<%= index %>">
+                    <%= index %>
+                  </option>
+                  <% } %>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-dark" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary" id="btn-save">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- modal edit menu -->
+  <div class="modal modal-blur fade show" id="modalEdit" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Menu</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div id="data-edit"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- modal detail submenu -->
+  <div class="modal modal-blur fade show" id="modalDetail" tabindex="-1" role="dialog" data-backdrop="static">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Detail Submenu</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="id_menu" id="id_menu">
+          <div id="detail-submenu"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- modal edit submenu -->
+  <div class="modal modal-blur fade show" id="modalEditSubmenu" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Menu</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div id="edit-submenu"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    $(document).ready(function () {
+      $(".datatables").DataTable()
+
+      $('#btn-save').click(function (e) {
+        let form = $('#formAdd');
+        e.preventDefault();
+        form.validate({
+          errorClass: "invalid-feedback animated fadeInDown",
+          errorElement: "div",
+          highlight: function (e) {
+            jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+          },
+          success: function (e) {
+            jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+          },
+          rules: {
+            main: "required",
+            link: "required",
+          },
+        });
+
+        if (form.valid()) {
+          $.ajax({
+            type: 'post',
+            url: `${SITE_URL}/admin/setting/menu`,
+            data: form.serialize(),
+            beforeSend: (res) => {
+              $('#btn-save').html(`<span class="spinner-border spinner-border-sm"></span> Loading...`)
+                .prop('disabled', true)
+            },
+            success: (res) => {
+              swal({
+                title: "Sukses",
+                text: "Menu berhasil ditambahkan",
+                icon: 'success',
+                timer: 1000,
+                button: false
+              }).then((value) => {
+                window.location.reload(true)
+              });
+            },
+            error: (xhr, status, pesan) => {
+              console.log(xhr)
+              swal("Error", pesan, "error");
+            }
+          })
+        }
+      })
+
+      $(document).on('click', '.btn-edit', function (e) {
+        let data = $(this).data('json')
+        // console.log(data)
+        $('#data-edit').html(`
+          <form id="formEdit">
+          <div class="modal-body">
+              <div class="form-group">
+                  <label for="edit_main">Menu</label>
+                  <input type="text" class="form-control" id="edit_main" name="edit_main" value="${data.main}">
+              </div>
+              <div class="form-group">
+                  <label for="edit_icon">Icon</label>
+                  <input type="text" class="form-control" id="edit_icon" name="edit_icon" value="${data.icon}">
+              </div>
+              <div class="form-group">
+                  <label for="edit_link">Link</label>
+                  <input type="text" class="form-control" id="edit_link" name="edit_link" value="${data.link}">
+              </div>
+              <div class="form-group">
+                  <label for="edit_urut">No Urut</label>
+                  <select name="edit_urut" id="edit_urut" class="form-control">${loopOption(data.urut)}</select>
+              </div>
+          </div>
+          <div class="modal-footer">
+              <input type="hidden" id="id_main" name="id_main" value="${data.id}">
+              <button type="button" class="btn btn-dark" data-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary" id="btn-update">Update</button>
+          </div>
+          </form>
+          `)
+        $('#modalEdit').modal('show')
+      })
+
+      $(document).on('click', '#btn-update', function (e) {
+        let form = $('#formEdit');
+        e.preventDefault();
+        form.validate({
+          errorClass: "invalid-feedback animated fadeInDown",
+          errorElement: "div",
+          highlight: function (e) {
+            jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+          },
+          success: function (e) {
+            jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+          },
+          rules: {
+            edit_main: "required",
+            edit_link: "required",
+          },
+        });
+
+        if (form.valid()) {
+          $.ajax({
+            type: 'put',
+            url: `${SITE_URL}/admin/setting/menu`,
+            data: form.serialize(),
+            beforeSend: (res) => {
+              $('#btn-update').html(`<span class="spinner-border spinner-border-sm"></span> Loading...`)
+                .prop('disabled', true)
+            },
+            success: (res) => {
+              swal({
+                title: "Sukses",
+                text: "Menu berhasil diupdate",
+                icon: 'success',
+                timer: 1000,
+                button: false
+              }).then((value) => {
+                window.location.reload(true)
+              });
+            },
+            error: (xhr, status, pesan) => {
+              $('#btn-update').html(`Update`).prop('disabled', false)
+              console.log(xhr)
+              swal("Error", pesan, "error");
+            }
+          })
+        }
+      })
+
+      // submenu
+      $(document).on('click', '.submenu', function () {
+        let id_menu = $(this).data('id')
+        $('#id_menu').val(id_menu)
+        $('#modalDetail').modal('show')
+        $.ajax({
+          url: `${SITE_URL}/admin/setting/menu/${id_menu}/submenu`,
+          beforeSend: (res) => {
+            $('#detail-submenu').html(`<span class="spinner-border spinner-border-sm"></span> Loading...`)
+          },
+          success: (respon) => {
+            $('#detail-submenu').html(respon)
+            $('.table-submenu').DataTable()
+          },
+          error: (xhr, status, pesan) => {
+            console.log(xhr)
+            swal("Error", pesan, "error");
+          }
+        })
+      })
+
+      // tambah submenu
+      $(document).on('click', '#btn-save-submenu', function (e) {
+        let form = $('#formAddSubmenu');
+        let main_id = $('#id_menu').val()
+        e.preventDefault();
+        form.validate({
+          errorClass: "invalid-feedback animated fadeInDown",
+          errorElement: "div",
+          highlight: function (e) {
+            jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+          },
+          success: function (e) {
+            jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+          },
+          rules: {
+            submenu: "required",
+            link_submenu: "required",
+          },
+        });
+
+        if (form.valid()) {
+          let formData = form.serializeArray();
+          formData.push({
+            name: "main_id",
+            value: main_id
+          });
+          $.ajax({
+            type: 'post',
+            url: `${SITE_URL}/admin/setting/submenu`,
+            data: formData,
+            success: (res) => {
+              swal({
+                title: "Sukses",
+                text: "Submenu berhasil ditambahkan",
+                icon: 'success',
+                timer: 1000,
+                button: false
+              }).then((value) => {
+                window.location.reload(true)
+              });
+            },
+            error: (xhr, status, pesan) => {
+              console.log(xhr)
+              swal("Error", pesan, "error");
+            }
+          })
+        }
+      })
+
+      $(document).on('click', '.edit-submenu', function (e) {
+        let data = $(this).data('json')
+        console.log(data)
+        $('#edit-submenu').html(`
+          <form id="formEditSubmenu">
+          <div class="modal-body">
+              <div class="form-group">
+                  <label for="edit_submenu">Submenu</label>
+                  <input type="text" class="form-control" id="edit_submenu" name="edit_submenu" value="${data.sub}">
+              </div>
+              <div class="form-group">
+                  <label for="edit_id_main">Main Menu</label>
+                  <select name="edit_id_main" id="edit_id_main" class="form-control" style="width:100%;">
+                      <option value="${data.menusId}">${data.menus.main}</option>
+                  </select>
+              </div>
+              <div class="form-group">
+                  <label for="edit_link_submenu">Link</label>
+                  <input type="text" class="form-control" id="edit_link_submenu" name="edit_link_submenu" value="${data.link}">
+              </div>
+              <div class="form-group">
+                  <label for="edit_urut_submenu">No Urut</label>
+                  <select name="edit_urut_submenu" id="edit_urut_submenu" class="form-control">${loopOption(data.urut)}</select>
+              </div>
+          </div>
+          <div class="modal-footer">
+              <input type="hidden" id="id_sub" name="id_sub" value="${data.id}">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary" id="btn-update-submenu">Update</button>
+          </div>
+          </form>
+          `)
+        $('#modalEditSubmenu').modal('show')
+
+        $('#edit_id_main').select2({
+          dropdownParent: $('#formEditSubmenu'),
+          ajax: {
+            url: `${SITE_URL}/admin/setting/menu/search`,
+            data: function (params) {
+              let query = {
+                search: params.term,
+                page: params.page
+              }
+              return query;
+            }
+          }
+        })
+      })
+
+      // update submenu
+      $(document).on('click', '#btn-update-submenu', function (e) {
+        let form = $('#formEditSubmenu');
+
+        e.preventDefault();
+        form.validate({
+          errorClass: "invalid-feedback animated fadeInDown",
+          errorElement: "div",
+          highlight: function (e) {
+            jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+          },
+          success: function (e) {
+            jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+          },
+          rules: {
+            edit_submenu: "required",
+            edit_id_main: "required",
+            edit_link_submenu: "required",
+          },
+        });
+
+        if (form.valid()) {
+          $.ajax({
+            type: 'put',
+            url: `${SITE_URL}/admin/setting/submenu`,
+            data: form.serialize(),
+            success: (res) => {
+              swal({
+                title: "Sukses",
+                text: "Submenu berhasil diupdate",
+                icon: 'success',
+                timer: 1000,
+                button: false
+              }).then((value) => {
+                window.location.reload(true)
+              });
+            },
+            error: (xhr, status, pesan) => {
+              console.log(xhr)
+              swal("Error", pesan, "error");
+            }
+          })
+        }
+      })
+
+      $(document).on('click', '.delete-submenu', function (e) {
+        let id = $(this).data('id')
+        console.log(id)
+      })
+    });
+
+
+    function loopOption(index) {
+      let option = ''
+      for (let i = 1; i <= 10; i++) {
+        option += `<option value="${i}" ${(i == index) ? 'selected' : ''}>${i}</option>`
+      }
+      return option
+    }
+  </script>
+  <%- include('footer') %>

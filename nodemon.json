@@ -1,0 +1,6 @@
+{
+  "watch": ["src", ".env"],
+  "ignore": [".auth_baileys/*"],
+  "ext": "js",
+  "exec": "node src/server.js"
+}

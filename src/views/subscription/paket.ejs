@@ -1,0 +1,91 @@
+<%- include('header') %>
+
+	<div class="row justify-content-center">
+		<input type="hidden" name="key" id="key" value="<%= device.key %>">
+		<input type="hidden" name="uuid" id="uuid" value="<%= device.uuid %>">
+		<% pakets.forEach(paket=> { %>
+			<div class="col-xl-4 col-md-6 mb-4">
+				<div class="card">
+					<div class="card-header text-center">
+						<h5 class="font-weight-bold">
+							<%= paket.name %>
+						</h5>
+					</div>
+					<div class="card-footer text-center">
+						<h4 class="font-weight-bold">Rp. <%= paket.diskon.toLocaleString('en-ID') %>
+						</h4>
+						<hr>
+						<del>
+							<h6 class="font-weight-bold">Rp. <%= paket.harga.toLocaleString('en-ID') %>
+							</h6>
+						</del>
+						<hr>
+						<button type="button" class="btn btn-primary btn-block btn-beli" data-json="<%= JSON.stringify(paket) %>"><i class="fe fe-shopping-cart"></i> BELI</button>
+					</div>
+				</div>
+			</div>
+			<% }) %>
+	</div>
+
+	<script>
+		$(document).on('click', '.btn-beli', function (e) {
+			e.preventDefault()
+			const data = $(this).data('json')
+			const harga = (data.diskon == 0) ? data.harga : data.diskon;
+			const key = $('#key').val()
+			const uuid = $('#uuid').val()
+
+			swal({
+				title: "Anda yakin?",
+				text: `BELI ${data.name} Rp. ${data.diskon.toLocaleString('en-ID')}`,
+				icon: "warning",
+				buttons: {
+					cancel: {
+						text: "Batal!",
+						value: false,
+						visible: true,
+						className: "btn-danger",
+						closeModal: true,
+					},
+					confirm: {
+						text: "Yakin!",
+						value: true,
+						visible: true,
+						className: "btn-success",
+						closeModal: true
+					}
+				},
+			}).then((konfirmasi) => {
+				if (konfirmasi) {
+					$.ajax({
+						type: 'post',
+						url: `${SITE_URL}/subscription/addcart`,
+						data: {
+							paketId: data.id,
+							devicesKey: key,
+						},
+						success: (res) => {
+							swal({
+								title: "Sukses",
+								text: res.data.message,
+								icon: 'success',
+								timer: 1000,
+								button: false
+							}).then((value) => {
+								window.location.href = `${SITE_URL}/subscription/cart`
+							});
+						},
+						error: (xhr, status, pesan) => {
+							swal({
+								title: 'Error',
+								text: pesan,
+								icon: 'error'
+							})
+						}
+					})
+				}
+			});
+		})
+	</script>
+
+	<%- include('footer') %>

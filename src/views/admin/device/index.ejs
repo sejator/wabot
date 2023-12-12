@@ -1,0 +1,139 @@
+<%- include('header') %>
+  <div class="row justify-content-center">
+    <div class="col-12">
+      <h2 class="mb-2 page-title">
+        <%= title %>
+      </h2>
+      <div class="row my-4">
+        <!-- Small table -->
+        <div class="col-md-12">
+          <div class="card shadow">
+            <div class="card-header">
+              <div class="d-flex">
+                <h4 class="header-title mr-auto">List Device</h4>
+              </div>
+
+            </div>
+            <div class="card-body">
+              <!-- table -->
+              <table class="table datatables" id="tabel-device">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Device Key</th>
+                    <th>Nama</th>
+                    <th>No Whatsapp</th>
+                    <th>Masa Aktif</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% const today=moment().unix() %>
+                    <% devices.forEach((row, i)=> { %>
+                      <tr>
+                        <td>
+                          <%= i + 1 %>
+                        </td>
+                        <td>
+                          <%= row.key %>
+                        </td>
+                        <td>
+                          <%= row.name %>
+                        </td>
+                        <td>
+                          <%= row.number %>
+                        </td>
+                        <td>
+                          <%= moment.unix(row.expired).format('D-MM-YYYY HH:mm:ss'); %>
+                        </td>
+                        <td>
+                          <% if (today> row.expired) { %>
+                            <!-- expired tanggal -->
+                            <span class="badge badge-danger p-2">Expired</span>
+                            <% } else { %>
+                              <!-- cek status -->
+                              <% if (row.ready) { %>
+                                <span class="badge badge-success p-2">Connected</span>
+                                <% } else { %>
+                                  <span class="badge badge-warning p-2">Disconnected</span>
+                                  <% } %>
+
+                                    <% } %>
+                        </td>
+                        <td>
+                          <button class="btn btn-sm btn-outline-danger delete" data-uuid="<%= row.uuid %>">Delete</button>
+                          <a class="btn btn-sm btn-outline-success" href="/admin/device/edit/<%= row.uuid %>">Edit</a>
+                        </td>
+                      </tr>
+                      <% }) %>
+
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div> <!-- simple table -->
+      </div> <!-- end section -->
+    </div> <!-- .col-12 -->
+  </div> <!-- .row -->
+
+  <script>
+    $(document).ready(function () {
+      $('#tabel-device').DataTable()
+
+      $(document).on('click', '.delete', function (e) {
+        e.preventDefault()
+        let uuid = $(this).data('uuid')
+
+        swal({
+          title: "Anda yakin?",
+          text: `Device akan di hapus.`,
+          icon: "warning",
+          buttons: {
+            cancel: {
+              text: "Batal!",
+              value: false,
+              visible: true,
+              className: "btn-danger",
+              closeModal: true,
+            },
+            confirm: {
+              text: "Yakin!",
+              value: true,
+              visible: true,
+              className: "btn-success",
+              closeModal: true
+            }
+          },
+        }).then((ok) => {
+          if (ok) {
+            $.ajax({
+              type: 'delete',
+              url: `${SITE_URL}/admin/device/delete/${uuid}`,
+              success: (res) => {
+                console.log(res)
+                swal({
+                  title: "Sukses",
+                  text: 'Device berhasil dihapus',
+                  icon: 'success',
+                  timer: 1000,
+                  button: false
+                }).then((value) => {
+                  window.location.reload()
+                });
+              },
+              error: (xhr, status, pesan) => {
+                console.log(xhr)
+                swal({
+                  title: 'Error',
+                  text: pesan,
+                  icon: 'error'
+                })
+              }
+            })
+          }
+        });
+      })
+    })
+  </script>
+  <%- include('footer') %>

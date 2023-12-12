@@ -1,0 +1,13 @@
+# NODE
+node_modules
+package-lock.json
+yarn.lock
+
+# APPLICATION
+.env
+temp
+logs
+wabot.zip
+
+# IDEs
+.vscode

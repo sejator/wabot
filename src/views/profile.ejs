@@ -1,0 +1,254 @@
+<%- include('header') -%>
+
+  <div class="row justify-content-center">
+    <div class="col-12">
+      <div class="row mb-3">
+        <div class="col-xl-3 col-md-4">
+          <!-- profil Image -->
+          <div class="card">
+            <div class="card-body box-profil">
+              <div class="text-center">
+                <img class="img-fluid img-circle" src="/assets/images/profil.png">
+              </div>
+              <h3 class="profil-username text-center"></h3>
+              <p class="text-muted text-center" id="daftar"></p>
+            </div>
+            <!-- /.card-body -->
+          </div>
+          <!-- /.card -->
+        </div>
+        <!-- /.col -->
+        <div class="col-xl-9 col-md-8 col-sm-12">
+          <div class="card">
+            <div class="card-body">
+              <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item">
+                  <a class="nav-link active" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="true">Profile</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" id="password-tab" data-toggle="tab" href="#tabpassword" role="tab" aria-controls="password" aria-selected="false">Password</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" id="key-tab" data-toggle="tab" href="#key" role="tab" aria-controls="key" aria-selected="false">API Key</a>
+                </li>
+              </ul>
+              <div class="tab-content" id="myTabContent">
+                <input type="hidden" name="id" id="id" value="<%= user.id %>">
+                <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                  <div class="mt-4">
+                    <form action="" class="form-horizontal" id="form-profile">
+                      <div class="form-group row">
+                        <label for="name" class="col-sm-3 col-form-label">Nama</label>
+                        <div class="col-sm-8">
+                          <input type="text" class="form-control" name="name" id="name" value="<%= user.name %>" required>
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <label for="whatsapp" class="col-sm-3 col-form-label">No Whatsapp</label>
+                        <div class="col-sm-8">
+                          <input type="text" class="form-control" name="whatsapp" id="whatsapp" value="<%= user.whatsapp %>" required>
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <label for="email" class="col-sm-3 col-form-label">Alamat Email</label>
+                        <div class="col-sm-8">
+                          <input type="text" class="form-control" name="email" id="email" value="<%= user.email %>" required>
+                        </div>
+                      </div>
+                      <div class="form-group text-right">
+                        <button type="submit" id="btn-profile" class="btn btn-primary">Update</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+                <div class="tab-pane fade" id="tabpassword" role="tabpanel" aria-labelledby="password-tab">
+                  <div class="mt-4">
+                    <form action="" class="form-horizontal" id="form-password">
+                      <div class="form-group row">
+                        <label for="password" class="col-sm-3 col-form-label">Password</label>
+                        <div class="col-sm-8">
+                          <input type="password" class="form-control" name="password" id="password" autocomplete="off">
+                          <div id="password-info" class="is-invalid"></div>
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <label for="konfir_password" class="col-sm-3 col-form-label">Konfirmasi Password</label>
+                        <div class="col-sm-8">
+                          <input type="password" class="form-control" name="konfir_password" id="konfir_password" autocomplete="off">
+                        </div>
+                      </div>
+                      <div class="form-group text-right">
+                        <button type="button" id="btn-password" class="btn btn-primary">Update</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+                <div class="tab-pane fade" id="key" role="tabpanel" aria-labelledby="key-tab">
+                  <div class="mt-4">
+                    <form action="" class="form-horizontal" id="form-key">
+                      <div class="form-group row">
+                        <label for="token" class="col-sm-2 col-form-label">Token</label>
+                        <div class="col-sm-10">
+                          <input type="text" class="form-control" name="token" id="token" value="<%= user.apikeys.token %>" readonly>
+                        </div>
+                      </div>
+                      <div class="form-group text-right">
+                        <button type="button" id="btn-token" class="btn btn-primary">Generate</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- /.card -->
+        </div>
+        <!-- /.col -->
+      </div>
+    </div>
+  </div>
+
+  <%- include('layouts/footer') -%>
+    <script>
+      $('#btn-profile').on('click', function (e) {
+        e.preventDefault()
+        const form = $('#form-profile')
+        form.validate({
+          errorElement: 'div',
+          errorClass: 'is-invalid',
+          rules: {
+            name: "required",
+            whatsapp: "required",
+            email: {
+              required: true,
+              email: true,
+            },
+          },
+        })
+
+        if (form.valid()) {
+          $.ajax({
+            type: 'post',
+            url: form.prop('action'),
+            data: form.serialize(),
+            beforeSend: (res) => {
+              $('#btn-profile').prop('disabled', true).text('LOADING...')
+            },
+            success: (res) => {
+              if (res.ok) {
+                $('input').prop('readonly', true)
+                swal({
+                  title: 'Sukses',
+                  text: res.data.message,
+                  icon: 'success',
+                  button: true,
+                }).then((value) => {
+                  window.location.reload()
+                })
+              }
+            },
+            error: (xhr, status, err) => {
+              $('#btn-profile').prop('disabled', false).text('Update')
+              if (xhr.status == 400) {
+                const res = xhr.responseJSON
+                const el = res.errors
+                Object.keys(el).forEach((i, val) => {
+                  swal("Error", el[i].message, "error");
+                })
+              } else {
+                console.log(xhr)
+                swal("Error", pesan, "error");
+              }
+            },
+          })
+        }
+      })
+
+      $('#btn-password').on('click', function (e) {
+        e.preventDefault()
+        const form = $('#form-password')
+        form.validate({
+          errorElement: 'div',
+          errorClass: 'is-invalid',
+          rules: {
+            password: {
+              required: true,
+              minlength: 6
+            },
+            konfir_password: {
+              equalTo: "#password",
+              required: true,
+            }
+          },
+        })
+
+        if (form.valid()) {
+          $.ajax({
+            type: 'post',
+            url: `${SITE_URL}/profile/password`,
+            data: form.serialize(),
+            beforeSend: (res) => {
+              $('#btn-password').prop('disabled', true).text('LOADING...')
+            },
+            success: (res) => {
+              if (res.ok) {
+                $('input').prop('readonly', true)
+                swal({
+                  title: 'Sukses',
+                  text: res.data.message,
+                  icon: 'success',
+                  button: true,
+                }).then((value) => {
+                  window.location.reload()
+                })
+              }
+            },
+            error: (xhr, status, err) => {
+              $('#btn-password').prop('disabled', false).text('Update')
+              if (xhr.status == 400) {
+                const res = xhr.responseJSON
+                const message = res.message.map((val, i) => {
+                  $(`#${Object.keys(val)}-info`).text(Object.values(val)).css('display', 'block')
+                })
+              } else {
+                swal({
+                  title: err,
+                  icon: 'error',
+                  button: true
+                })
+              }
+            },
+          })
+        }
+      })
+
+      $('#btn-token').on('click', function (e) {
+        e.preventDefault()
+        $.ajax({
+          type: 'post',
+          url: `${SITE_URL}/profile/token`,
+          beforeSend: (res) => {
+            $('#btn-token').prop('disabled', true).text('LOADING...')
+          },
+          success: (res) => {
+            if (res.ok) {
+              swal({
+                title: 'Sukses',
+                text: res.data.message,
+                icon: 'success',
+              }).then((ok) => {
+                window.location.reload()
+              })
+            }
+          },
+          error: (xhr, status, err) => {
+            $('#btn-token').prop('disabled', false).text('Update')
+            swal({
+              title: 'Error',
+              text: err,
+              icon: 'error',
+            })
+          },
+        })
+      })
+    </script>

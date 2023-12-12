@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="Sejator">
+    <title>
+        <%= title %>
+    </title>
+    <!-- Bootstrap core CSS -->
+    <link href="/assets/css/app-light.css" rel="stylesheet">
+    <link href="/assets/images/favicon.ico" rel="icon" />
+
+    <style>
+        body {
+            min-height: 75rem;
+            padding-top: 4.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <main role="main" class="container">
+        <div class="jumbotron">
+            <h1><%= title %></h1>
+            <% if (login) { %>
+                <a class="btn btn-lg btn-primary" href="/dashboard">Dashboard &raquo;</a>
+                <% } else { %>
+                    <p class="lead">Silahkan login dulu.</p>
+                    <a class="btn btn-lg btn-primary" href="/auth">Login &raquo;</a>
+                    <% } %>
+        </div>
+    </main>
+</body>
+
+</html>

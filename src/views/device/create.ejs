@@ -1,0 +1,88 @@
+<%- include('header') %>
+  <div class="row justify-content-center">
+    <div class="col-12">
+      <h2 class="mb-2 page-title">
+        <%= title %>
+      </h2>
+      <div class="row my-4">
+        <div class="col-md-6">
+          <div class="card shadow">
+            <div class="card-body">
+              <form id="form-add" action="" method="post">
+                <div class="form-group">
+                  <label for="name">Nama Device</label>
+                  <input type="text" class="form-control" id="name" name="name">
+                </div>
+                <div class="form-group">
+                  <label for="number">Nomor Whatsapp</label>
+                  <input type="text" class="form-control" id="number" name="number" placeholder="08129501xxxx">
+                  <small class="font-italic">Nomor whatsapp harus aktif.</small>
+                </div>
+                <div class="form-group text-right">
+                  <input type="hidden" name="userId" id="userId" value="<%= userId %>">
+                  <button class="btn btn-primary" type="submit" id="btn-add">Lanjut <i class="fe fe-chevrons-right"></i></button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div> <!-- simple table -->
+      </div> <!-- end section -->
+    </div> <!-- .col-12 -->
+  </div> <!-- .row -->
+
+  <script>
+    $(document).ready(function () {
+      $('#btn-add').on('click', function (e) {
+        e.preventDefault()
+        const form = $('#form-add')
+        form.validate({
+          errorElement: 'div',
+          errorClass: 'is-invalid',
+          rules: {
+            name: 'required',
+            number: {
+              required: true,
+              number: true
+            }
+          },
+        })
+
+        if (form.valid()) {
+          $.ajax({
+            type: form.attr('method'),
+            url: form.attr('action'),
+            data: form.serialize(),
+            beforeSend: (res) => {
+              $('#btn-add').prop('disabled', true).html('Loading...')
+            },
+            success: (res) => {
+              swal({
+                title: 'Sukses',
+                text: res.data.message,
+                icon: 'success',
+                closeOnClickOutside: false,
+              }).then((value) => {
+                if (value) {
+                  window.location.href = `${SITE_URL}/device`
+                }
+              })
+            },
+            error: (xhr, status, pesan) => {
+              $('#btn-add').prop('disabled', false).html(`Lanjut <i class="fe fe-chevrons-right"></i>`)
+              if (xhr.status == 400) {
+                const res = xhr.responseJSON
+                const el = res.errors
+                Object.keys(el).forEach((i, val) => {
+                  swal("Error", el[i].message, "error");
+                })
+              } else {
+                console.log(xhr)
+                swal("Error", pesan, "error");
+              }
+            }
+          })
+        }
+      })
+    })
+  </script>
+  <%- include('footer') %>

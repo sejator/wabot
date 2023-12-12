@@ -1,0 +1,136 @@
+<%- include('header') %>
+
+  <div class="row justify-content-center">
+    <div class="col-12">
+      <form id="form-checkout" action="" method="post">
+        <div class="row">
+          <!-- simple table -->
+          <div class="col-md-12 my-4">
+            <div class="card shadow">
+              <div class="card-body">
+                <table class="table striped table-bordered">
+                  <thead class="thead-dark">
+                    <tr>
+                      <th>Produk</th>
+                      <th>Device</th>
+                      <th>Harga</th>
+                      <th>Durasi (bulan)</th>
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% let total=0; %>
+                      <% cart.forEach(row=> { %>
+                        <% total +=parseInt(row.paket.diskon); %>
+                          <tr>
+                            <input type="hidden" name="paketId" id="paketId" value="<%= row.paketId %>">
+                            <input type="hidden" name="total" id="total" value="<%= row.paket.diskon %>">
+                            <input type="hidden" name="deviceKey" id="deviceKey" value="<%= row.devicesKey %>">
+                            <td>
+                              <%= row.paket.name %>
+                            </td>
+                            <td>
+                              <%= row.devicesKey %>
+                            </td>
+                            <td>Rp. <%= parseInt(row.paket.diskon).toLocaleString('en-ID') %>
+                            </td>
+                            <td class="text-center">
+                              <%= row.paket.durasi %>
+                            </td>
+                            <td>Rp. <%= parseInt(row.paket.diskon).toLocaleString('en-ID') %>
+                            </td>
+                          </tr>
+                          <% }) %>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th colspan="4" class="text-right">Total Harga</th>
+                      <th>Rp. <%= total.toLocaleString('en-ID') %>
+                      </th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div> <!-- simple table -->
+        </div>
+        <div class="row">
+          <div class="col-md-6 my-4">
+            <div class="card shadow">
+              <div class="card-body">
+                <h5 class="card-title">Pilih Bank Transfer</h5>
+                <hr>
+                <div class="form-group mb-3">
+                  <label for="bankId">Nama Bank</label>
+                  <select class="form-control" id="bankId" name="bankId">
+                    <option value="">--Pilih Bank--</option>
+                    <% banks.forEach(bank=> { %>
+                      <option value="<%= bank.id %>" data-norek="<%= bank.norek %>" data-pemilik="<%= bank.pemilik %>">
+                        <%= bank.name %>
+                      </option>
+                      <% }) %>
+                  </select>
+                </div>
+                <div class="form-group mt-5">
+                  <button class="btn btn-primary btn-block" type="submit" id="btn-checkout">Bayar <i class="fe fe-send"></i></button>
+                </div>
+              </div>
+            </div>
+          </div> <!-- col-md-6-->
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    $(document).ready(function () {
+      $('#btn-checkout').on('click', function (e) {
+        e.preventDefault()
+        const form = $('#form-checkout')
+        form.validate({
+          errorElement: 'div',
+          errorClass: 'is-invalid',
+          rules: {
+            bankId: 'required',
+          },
+          messages: {
+            bankId: 'Nama bank belum dipilih',
+          }
+        })
+
+        if (form.valid()) {
+          $.ajax({
+            type: form.attr('method'),
+            url: form.attr('action'),
+            data: form.serialize(),
+            beforeSend: (res) => {
+              $('#btn-checkout').prop('disabled', true).html('Loading...')
+            },
+            success: (res) => {
+              swal({
+                title: 'Sukses',
+                text: res.data.message,
+                icon: 'success',
+                closeOnClickOutside: false,
+              }).then((value) => {
+                if (value) {
+                  window.location.href = `${SITE_URL}/subscription/invoice/${res.data.uuid}`
+                }
+              })
+            },
+            error: (xhr, status, pesan) => {
+              $('#btn-checkout').prop('disabled', false).html(`Bayar <i class="fe fe-send"></i>`)
+              swal({
+                title: 'Error',
+                text: pesan,
+                icon: 'error',
+                button: true
+              })
+            }
+          })
+        }
+
+      })
+    })
+  </script>
+  <%- include('footer') %>

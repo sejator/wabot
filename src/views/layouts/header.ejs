@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <link href="/assets/images/favicon.ico" rel="icon" />
+  <title>
+    <%= title %>
+  </title>
+  <!-- Simple bar CSS -->
+  <link rel="stylesheet" href="/assets/css/simplebar.css">
+  <!-- Fonts CSS -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;600;700&display=swap" rel="stylesheet">
+  <!-- Icons CSS -->
+  <link rel="stylesheet" href="/assets/css/feather.css">
+  <!-- Date Range Picker CSS -->
+  <link rel="stylesheet" href="/assets/css/daterangepicker.css">
+  <link rel="stylesheet" href="/assets/css/dataTables.bootstrap4.css">
+  <link rel="stylesheet" href="/assets/css/jquery-ui.css">
+  <!-- App CSS -->
+  <link rel="stylesheet" href="/assets/css/app-light.css" id="lightTheme">
+  <link rel="stylesheet" href="/assets/css/app-dark.css" id="darkTheme" disabled>
+  <!-- custom css -->
+  <link rel="stylesheet" href="/assets/css/custom.css">
+  <link rel="stylesheet" href="/assets/css/select2.css">
+
+  <script src="/assets/js/jquery.min.js"></script>
+  <script src="/assets/js/sweetalert.min.js"></script>
+  <script src="/assets/js/jquery.validate.min.js"></script>
+  <script src="/assets/js/jquery-ui.js"></script>
+  <script src="/assets/js/socket.io.min.js"></script>
+  <script src="/assets/js/bootstrap-markdown.js"></script>
+  <script src="/assets/js/select2.min.js"></script>
+  <script>
+    const socket = io();
+    const SITE_URL = `${window.location.protocol}//${window.location.host}`
+  </script>
+</head>
+
+<body class="vertical light">
+  <div class="wrapper">
+    <!-- Navbar -->
+    <%- include('navbar') %>
+      <!-- Sidebar -->
+      <%- include('sidebar') %>
+        <!-- start javascript atur thema light/dark -->
+        <script src="/assets/js/tinycolor-min.js"></script>
+        <script src="/assets/js/config.js"></script>
+        <!-- end -->
+        <main role="main" class="main-content">
+          <div class="container-fluid">
+
+            <!-- render konten disini -->

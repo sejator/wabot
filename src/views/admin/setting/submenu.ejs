@@ -1,0 +1,75 @@
+<ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link active" id="pills-list-tab" data-toggle="pill" href="#pills-home" role="tab" aria-controls="pills-home" aria-selected="true">List</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="pills-submenu-tab" data-toggle="pill" href="#pills-profile" role="tab" aria-controls="pills-profile" aria-selected="false">Tambah</a>
+    </li>
+</ul>
+<div class="tab-content" id="pills-tabContent">
+    <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-list-tab">
+        <div class="table-responsive">
+            <table class="table table-submenu">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Submenu</th>
+                        <th>Link</th>
+                        <th>Urut</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% submenus.forEach((submenu, i)=> { %>
+                        <tr>
+                            <td>
+                                <%= i + 1 %>
+                            </td>
+                            <td>
+                                <%= submenu.sub %>
+                            </td>
+                            <td>
+                                <%= submenu.link %>
+                            </td>
+                            <td>
+                                <%= submenu.urut %>
+                            </td>
+                            <td>
+                                <button title="Edit" class="btn btn-outline-primary btn-sm edit-submenu" data-json="<%= JSON.stringify(submenu) %>">Edit</button>
+                                <button title="Delete" class="btn btn-outline-danger btn-sm delete-submenu" data-id="<%= submenu.id %>">Delete</button>
+                            </td>
+                        </tr>
+                        <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- form tambah submenu -->
+    <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-submenu-tab">
+        <form id="formAddSubmenu">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="submenu">Submenu</label>
+                    <input type="text" class="form-control" id="submenu" name="submenu">
+                </div>
+                <div class="form-group">
+                    <label for="link_submenu">Link</label>
+                    <input type="text" class="form-control" id="link_submenu" name="link_submenu" placeholder="dashboard">
+                </div>
+                <div class="form-group">
+                    <label for="urut_submenu">No Urut</label>
+                    <select name="urut_submenu" id="urut_submenu" class="form-control">
+                        <% for( let index=1; index <=10; index++ ) { %>
+                            <option value="<%= index %>">
+                                <%= index %>
+                            </option>
+                            <% } %>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" id="btn-save-submenu">Save</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

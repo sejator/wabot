@@ -1,0 +1,154 @@
+<%- include('header') %>
+  <div class="row justify-content-center">
+    <div class="col-12">
+      <h2 class="mb-2 page-title">
+        <%= title %>
+      </h2>
+      <div class="row my-4">
+        <!-- Small table -->
+        <div class="col-md-12">
+          <div class="card shadow">
+            <div class="card-header">
+              <div id="ready" data-ready="<%= device.ready %>"></div>
+              <h4 class="header-title">Silakan Pindai Kode QR untuk Perangkat <strong>[<%= device.name %>]</strong></h4>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-7 mb-3">
+                  <ul class="list-group">
+                    <li class="list-group-item">1. Buka Aplikasi <span class="text-danger">WhatsApp</span> di ponsel Anda.</li>
+                    <li class="list-group-item">2. Klik <span class="text-danger">3 titik menu</span> di pojok kanan atas.</li>
+                    <li class="list-group-item">3. Ketuk pada menu <span class="text-danger">Perangkat Tertaut.</span></li>
+                    <li class="list-group-item">4. Kemudian, <span class="text-danger">Pindai QR Code</span> di samping/bawah ini.</li>
+                  </ul>
+                </div>
+                <div class="col-md-5">
+                  <div id="qrcode" class="text-center">
+                    <img src="/assets/images/scan-wa.png" class="rounded" alt="QR Code">
+                  </div>
+                  <div id="message" class="my-2 text-center">
+                    <p>QR Code akan muncul di sini, pastikan Anda telah terhubung dengan WhatsApp.</p>
+                  </div>
+                  <div class="text-center">
+                    <div class="mb-2 d-none" id="timeout">Batas waktu scan <span id="timer">0</span> detik!</div>
+                    <button class="btn btn-primary" id="btn-scan" data-uuid="<%= device.uuid %>">Generate QR Code</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div> <!-- simple table -->
+      </div> <!-- end section -->
+    </div> <!-- .col-12 -->
+  </div> <!-- .row -->
+
+  <script>
+    const elm = document.getElementById('timer')
+    let interval
+    let sec = 30
+
+    $('#btn-scan').on('click', function (e) {
+      e.preventDefault()
+      loading('scan')
+      const uuid = $(this).data('uuid')
+      socket.emit('scan', {
+        uuid: uuid
+      });
+    })
+
+    // mulai scan qrcode
+    socket.on('init', function (key) {
+      setTimeout(() => {
+        socket.emit('qr', {
+          key: key
+        });
+      }, 3000);
+    });
+
+    socket.on('qr', function (data) {
+      // console.log(data)
+      startTimer()
+      loading('qr', data.url)
+    });
+
+    // scan qr code mencapai batas
+    socket.on('destroy', function (data) {
+      // console.log(data)
+      stopTimer()
+      loading('destroy')
+    });
+
+    socket.on('loading', function (data) {
+      // console.log(data)
+      stopTimer()
+      loading('scan')
+    })
+
+    socket.on('ready', function (ready) {
+      // console.log(ready)
+      loading('ready')
+    });
+
+    socket.on('message', function (text) {
+      // console.log(text)
+      $('#message').html(text);
+    });
+
+    function loading(type, data = null) {
+      const el = $('#qrcode')
+      const btn = $('#btn-scan')
+
+      if (type == 'scan') {
+        btn.prop('disabled', true).html(`<span class="spinner-border spinner-border-sm"></span> Loading...`)
+        if (localStorage.getItem("mode") == 'light') {
+          el.html(`<div class="spinner-border m-5" role="status" style="width: 3rem; height: 3rem;"></div>`)
+        } else {
+          el.html(`<div class="spinner-border text-primary m-5" role="status" style="width: 3rem; height: 3rem;"></div>`)
+        }
+      } else if (type == 'qr') {
+        el.html(`<img src="${data}" class="rounded" alt="QR Code">`)
+      } else if (type == 'destroy') {
+        el.html(`<img src="${SITE_URL}/assets/images/scan-wa.png" class="rounded" alt="QR Code">`)
+        btn.prop('disabled', false).html(`Generate QR Code`)
+      } else {
+        btn.remove()
+        el.html(`<img src="${SITE_URL}/assets/images/alert-success.png" class="rounded" alt="Success">`)
+
+        setTimeout(() => {
+          window.location.href = `${SITE_URL}/device`
+        }, 1000);
+      }
+    }
+
+    function startTimer() {
+      $('#timeout').removeClass('d-none')
+      interval = setInterval(() => {
+        elm.innerHTML = sec
+        if (sec > 0) {
+          sec--
+        }
+      }, 1000);
+    }
+
+    function stopTimer() {
+      $('#timeout').addClass('d-none')
+      clearInterval(interval)
+      sec = 30
+    }
+
+    cekReadyDevice()
+    function cekReadyDevice() {
+      if ($('#ready').data('ready')) {
+        swal({
+          title: "Mantap",
+          text: "Mantap... Whatsapp sudah siap!",
+          icon: 'success',
+          timer: 1500,
+          button: false
+        }).then((value) => {
+          window.location.href = `${SITE_URL}/device`
+        });
+      }
+    }
+  </script>
+  <%- include('footer') %>

@@ -1,0 +1,119 @@
+<%- include('header') -%>
+
+  <div class="row justify-content-center">
+    <div class="col-12">
+      <div class="row mb-3">
+        <div class="col-xl-6 col-md-6">
+          <!-- profil Image -->
+          <div class="card">
+            <div class="card-body box-profil">
+              <input type="hidden" name="id" id="id" value="<%= user.id %>">
+              <form action="" class="form-horizontal" id="form-profile">
+                <div class="form-group row">
+                  <label for="name" class="col-sm-4 col-form-label">Nama</label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control" name="name" id="name" value="<%= user.name %>" required>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="whatsapp" class="col-sm-4 col-form-label">No Whatsapp</label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control" name="whatsapp" id="whatsapp" value="<%= user.whatsapp %>" required>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="email" class="col-sm-4 col-form-label">Alamat Email</label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control" name="email" id="email" value="<%= user.email %>" required>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="email" class="col-sm-4 col-form-label">Status</label>
+                  <div class="col-sm-8">
+                    <select name="status" id="status" class="form-control">
+                      <option value="true" <%=(user.status==true) ? 'selected' : '' %>>Aktif</option>
+                      <option value="false" <%=(user.status==false) ? 'selected' : '' %>>Non Aktif</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="password" class="col-sm-4 col-form-label">Password</label>
+                  <div class="col-sm-8">
+                    <input type="password" class="form-control" name="password" id="password" autocomplete="off">
+                    <div id="password-info" class="is-invalid"></div>
+                  </div>
+                </div>
+                <div class="form-group text-right">
+                  <a href="/admin/setting/user" class="btn btn-warning">Back</a>
+                  <button type="submit" id="btn-profile" class="btn btn-primary">Update</button>
+                </div>
+              </form>
+            </div>
+            <!-- /.card-body -->
+          </div>
+          <!-- /.card -->
+        </div>
+        <!-- /.col -->
+
+        <!-- /.col -->
+      </div>
+    </div>
+  </div>
+
+  <%- include('layouts/footer') -%>
+    <script>
+      $('#btn-profile').on('click', function (e) {
+        e.preventDefault()
+        const form = $('#form-profile')
+        const id = $('#id').val()
+        form.validate({
+          errorElement: 'div',
+          errorClass: 'is-invalid',
+          rules: {
+            name: "required",
+            whatsapp: "required",
+            email: {
+              required: true,
+              email: true,
+            },
+          },
+        })
+
+        if (form.valid()) {
+          $.ajax({
+            type: 'put',
+            url: `${SITE_URL}/admin/setting/user/edit/${id}`,
+            data: form.serialize(),
+            beforeSend: (res) => {
+              $('#btn-profile').prop('disabled', true).text('LOADING...')
+            },
+            success: (res) => {
+              if (res.ok) {
+                $('input').prop('readonly', true)
+                swal({
+                  title: 'Sukses',
+                  text: res.data.message,
+                  icon: 'success',
+                  button: true,
+                }).then((value) => {
+                  window.location.reload(true)
+                })
+              }
+            },
+            error: (xhr, status, err) => {
+              $('#btn-profile').prop('disabled', false).text('Update')
+              if (xhr.status == 400) {
+                const res = xhr.responseJSON
+                const el = res.errors
+                Object.keys(el).forEach((i, val) => {
+                  swal("Error", el[i].message, "error");
+                })
+              } else {
+                console.log(xhr)
+                swal("Error", pesan, "error");
+              }
+            },
+          })
+        }
+      })
+    </script>

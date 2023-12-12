@@ -1,0 +1,110 @@
+<%- include('header') -%>
+
+  <div class="row mb-3">
+    <div class="col-lg-12 mb-4">
+      <!-- Simple Tables -->
+      <div class="card">
+        <div class="card-header py-3 d-flex flex-row justify-content-end">
+          <a href="/message/auto-reply/create" class="btn btn-sm btn-primary"><i class="fe fe-plus-circle"></i> Tambah</a>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover" id="tabel-komen">
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Device</th>
+                  <th>Tipe</th>
+                  <th>Keyword</th>
+                  <th>Respon</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <% messages.forEach((row, i)=> { %>
+                  <tr>
+                    <td>
+                      <%= i + 1 %>
+                    </td>
+                    <td>
+                      <%= row.deviceKey %>
+                    </td>
+                    <td>
+                      <%= row.type %>
+                    </td>
+                    <td>
+                      <%= row.keyword %>
+                    </td>
+                    <td>
+                      <%= row.message %>
+                    </td>
+
+                    <td class="d-flex">
+                      <a href="/message/auto-reply/edit/<%= row.uuid %>" class="btn btn-sm btn-warning mx-1">Edit</a>
+                      <button data-uuid="<%= row.uuid %>" class="btn btn-sm btn-danger delete">Delete</button>
+                    </td>
+                  </tr>
+                  <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('footer') -%>
+
+    <script>
+      $('#tabel-komen').DataTable()
+
+      $(document).on('click', '.delete', function (e) {
+        e.preventDefault()
+        const uuid = $(this).data('uuid')
+        swal({
+          title: 'Warning',
+          icon: 'warning',
+          text: 'Yakin ingin dihapus?',
+          buttons: {
+            cancel: {
+              text: "Tidak!",
+              value: false,
+              visible: true,
+              className: "btn-danger",
+              closeModal: true,
+            },
+            confirm: {
+              text: "Yakin!",
+              value: true,
+              visible: true,
+              className: "btn-success",
+              closeModal: true
+            }
+          },
+        }).then((konfirmasi) => {
+          if (konfirmasi) {
+            $.ajax({
+              type: 'delete',
+              url: `${SITE_URL}/message/auto-reply/delete/${uuid}`,
+              success: (res) => {
+                swal({
+                  title: 'Sukses',
+                  text: 'Data berhasil dihapus',
+                  icon: 'success'
+                }).then((ok) => {
+                  window.location.reload()
+                })
+              },
+              error: (xhr, status, pesan) => {
+                swal({
+                  title: 'Error',
+                  text: pesan,
+                  icon: 'error'
+                })
+              }
+            })
+          }
+        })
+      })
+    </script>

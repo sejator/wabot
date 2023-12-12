@@ -1,0 +1,328 @@
+<%- include('header') -%>
+
+	<form id="form-add" action="">
+		<div class="row mb-3">
+			<div class="col-xl-5 col-lg-8 col-md-12">
+				<div class="card mb-2">
+					<div class="card-body">
+						<div class="form-group">
+							<label for="device">Device</label>
+							<select name="device" id="device" class="form-control">
+								<option value="">--Pilih Device--</option>
+								<% devices.forEach((row, i)=> { %>
+									<option value="<%= row.key %>">
+										<%= row.key %> [<%= row.number %>]
+									</option>
+									<% }) %>
+							</select>
+						</div>
+						<div class="form-group">
+							<label for="tipe">Tipe</label>
+							<select name="tipe" id="tipe" class="form-control" disabled>
+								<option value="">--Pilih Tipe Pesan--</option>
+								<option value="TEXT">Pesan Text</option>
+								<option value="BUTTON">Pesan Text Button</option>
+								<option value="LIST">Pesan List Menu</option>
+							</select>
+						</div>
+						<div class="form-group text-right">
+							<div>
+								<a href="/message/auto-reply" class="btn btn-outline-warning">Back</a>
+								<span id="show-button"></span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-xl-7 col-lg-8 col-md-12">
+				<div id="container-message"></div>
+			</div>
+		</div>
+	</form>
+
+	<%- include('footer') -%>
+		<script>
+			$('#device').change(function (e) {
+				if (e.target.value == '') {
+					$('#tipe').prop('disabled', true).val('')
+					$('#container-message').html('')
+					$('#show-button').html('')
+				} else {
+					$('#tipe').prop('disabled', false)
+				}
+			})
+
+			$('#tipe').change(function (e) {
+				let tipe = e.target.value
+				if (tipe == '') {
+					$('#container-message').html('')
+					$('#show-button').html('')
+				} else {
+					$('#show-button').html(`<button class="btn btn-primary" type="button" id="btn-save">Tambah</button>`)
+					if (tipe == 'TEXT') {
+						$('#container-message').html(templateText())
+					} else if (tipe == 'BUTTON') {
+						$('#container-message').html(templateButton())
+					} else {
+						$('#container-message').html(templateList())
+					}
+					// editor markdown
+					editorMarkdown('pesan')
+				}
+			})
+
+			$(document).on('click', '#btn-save', function (e) {
+				e.preventDefault()
+				const btn = $(this)
+				const form = $('#form-add')
+				const tipe = $('#tipe').val()
+
+				if (tipe == 'TEXT') {
+					form.validate({
+						errorElement: 'div',
+						errorClass: 'is-invalid',
+						rules: {
+							keyword: 'required',
+							pesan: 'required',
+						},
+					})
+				} else if (tipe == 'BUTTON') {
+					form.validate({
+						errorElement: 'div',
+						errorClass: 'is-invalid',
+						rules: {
+							keyword: 'required',
+							pesan: 'required',
+							button: 'required'
+						},
+					})
+				} else {
+					form.validate({
+						errorElement: 'div',
+						errorClass: 'is-invalid',
+						rules: {
+							keyword: 'required',
+							pesan: 'required',
+							list: 'required'
+						},
+					})
+				}
+
+				if (form.valid()) {
+					$.ajax({
+						type: 'post',
+						url: form.prop('action'),
+						data: form.serialize(),
+						beforeSend: (res) => {
+							btn.prop('disabled', true).text('Loading...')
+						},
+						success: (res) => {
+							if (res.ok) {
+								$('input').prop('disabled', true)
+								swal({
+									title: 'Sukses',
+									text: res.data.message,
+									icon: 'success',
+								}).then((ok) => {
+									window.location.href = `${SITE_URL}/message/auto-reply`
+								})
+							}
+						},
+						error: (xhr, status, err) => {
+							btn.prop('disabled', false).text('Tambah')
+							if (xhr.status == 400) {
+								const res = xhr.responseJSON
+								const el = res.errors
+								Object.keys(el).forEach((i, val) => {
+									swal("Error", el[i].message, "error");
+								})
+							} else {
+								console.log(xhr)
+								swal("Error", pesan, "error");
+							}
+						},
+					})
+				}
+			})
+
+			$(document).on('input', '#keyword', function (e) {
+				const elem = $(this)
+				const device = $('#device').val()
+				$(elem).autocomplete({
+					source: function (req, res) {
+						$.ajax({
+							url: `${SITE_URL}/message/auto-reply/search`,
+							data: {
+								keyword: req.term,
+								device: device
+							},
+							success: function (data) {
+								res(data);
+							}
+						});
+					},
+					select: function (event, ui) {
+						$('#keyword').val(ui.item.value)
+					},
+				});
+			})
+
+			$(document).on('input', '.cek-btn', function (e) {
+				const elem = $(this)
+				const device = $('#device').val()
+				$(elem).autocomplete({
+					source: function (req, res) {
+						$.ajax({
+							url: `${SITE_URL}/message/auto-reply/search`,
+							data: {
+								keyword: req.term,
+								device: device
+							},
+							success: function (data) {
+								if (data.length > 0) {
+									$('#btn-save').prop('disabled', true)
+									$(elem).parent().find('input').addClass('is-invalid').next().text('Nama tombol sudah ada')
+								} else {
+									$('#btn-save').prop('disabled', false)
+									$(elem).parent().find('input').removeClass('is-invalid').next().text('')
+								}
+							}
+						});
+					}
+				});
+			})
+
+			function templateText() {
+				return `<div class="card">
+					<div class="card-body">
+						<div class="form-group">
+							<label for="keyword">Keyword</label>
+							<input type="text" name="keyword" id="keyword" class="form-control">
+							<div id="keyword-info" class="is-invalid"></div>
+						</div>
+						<div class="form-group">
+							<label for="pesan">Respon Pesan</label>
+							<textarea name="pesan" id="pesan" class="form-control" rows="6"></textarea>
+						</div>
+					</div>
+				</div>`
+			}
+
+			function templateButton() {
+				return `<div class="card">
+					<div class="card-body">
+						<div class="form-group">
+							<label for="keyword">Keyword</label>
+							<input type="text" name="keyword" id="keyword" class="form-control">
+							<div id="keyword-info" class="is-invalid"></div>
+						</div>
+						<div class="form-group">
+							<label for="title">Title (Boleh kosong)</label>
+							<input type="text" name="title" id="title" class="form-control">
+						</div>
+						<div class="form-group">
+							<label for="footer">Footer (Boleh kosong)</label>
+							<input type="text" name="footer" id="footer" class="form-control">
+						</div>
+						<div class="form-group">
+							<label for="pesan">Body Pesan</label>
+							<textarea name="pesan" id="pesan" class="form-control" rows="6"></textarea>
+						</div>
+						<div class="form-row">
+							<div class="form-group col-sm-4">
+								<label for="btn1">Button 1</label>
+								<input type="text" class="form-control cek-btn" id="btn1" name="button">
+								<div class="is-invalid"></div>
+							</div>
+							<div class="form-group col-sm-4">
+								<label for="btn2">Button 2 <small>(Boleh kosong)</small></label>
+								<input type="text" class="form-control cek-btn" id="btn2" name="button">
+								<div class="is-invalid"></div>
+							</div>
+							<div class="form-group col-sm-4">
+								<label for="btn3">Button 3 <small>(Boleh kosong)</small></label>
+								<input type="text" class="form-control cek-btn" id="btn3" name="button">
+								<div class="is-invalid"></div>
+							</div>
+						</div>
+					</div>
+				</div>`
+			}
+
+			function templateList() {
+				return `<div class="card">
+					<div class="card-body">
+						<div class="form-group">
+							<label for="keyword">Keyword</label>
+							<input type="text" name="keyword" id="keyword" class="form-control">
+							<div id="keyword-info" class="is-invalid"></div>
+						</div>
+						<div class="form-group">
+							<label for="title">Title (Boleh kosong)</label>
+							<input type="text" name="title" id="title" class="form-control">
+						</div>
+						<div class="form-group">
+							<label for="footer">Footer (Boleh kosong)</label>
+							<input type="text" name="footer" id="footer" class="form-control">
+						</div>
+						<div class="form-group">
+							<label for="pesan">Body Pesan</label>
+							<textarea name="pesan" id="pesan" class="form-control" rows="6"></textarea>
+						</div>
+						<div id="list-menu">
+							<div class="form-group row menu">
+								<label for="list0" class="col-sm-3 col-form-label">List Menu</label>
+								<div class="col-sm-6">
+									<input type="text" class="form-control cek-btn" id="list0" name="list">
+									<small class="text-danger"></small>
+								</div>
+								<div class="col-sm-3 mt-2">
+									<i class="fe fe-16 fe-plus-circle text-success mx-2 tambah-list" title="Tambah List" style="cursor: pointer;" onclick="tambahList(this)"></i>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>`
+			}
+
+			function tambahList(elem) {
+				let row = $('#list-menu').children('.row').length + 1
+				if (row < 20) {
+					$('#list-menu').append(`<div class="form-group row menu">
+						<label for="list${row}" class="col-sm-3 col-form-label">List Menu</label>
+						<div class="col-sm-6">
+							<input type="text" class="form-control cek-btn" id="list${row}" name="list">
+							<small class="text-danger"></small>
+						</div>
+						<div class="col-sm-3 mt-2">
+							<i class="fe fe-16 fe-plus-circle text-success mx-2 tambah-list" title="Tambah List" style="cursor: pointer;" onclick="tambahList(this)"></i>
+							<i class="fe fe-16 fe-trash-2 text-danger mx-2 delete-list" title="Hapus List" style="cursor: pointer;" onclick="hapusList(this)"></i>
+						</div>
+					</div>`)
+				} else {
+					swal({
+						title: 'Warning',
+						text: 'List menu melebihi batas, maksimal 20',
+						icon: 'warning',
+					})
+				}
+			}
+
+			function hapusList(elem) {
+				$(elem).parent().parent().remove()
+			}
+
+			function editorMarkdown(el) {
+				$(`#${el}`).markdown({
+					hiddenButtons: ['cmdHeading', 'cmdUrl', 'cmdImage', 'cmdList', 'cmdListO', 'cmdQuote', 'cmdPreview'],
+					language: 'id'
+				})
+				$.fn.markdown.messages['id'] = {
+					'strong text': "tebal",
+					'emphasized text': "miring",
+					'strikethrough text': "coret",
+					'code text here': "monospace"
+				};
+			}
+		</script>

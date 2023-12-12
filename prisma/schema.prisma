@@ -1,0 +1,282 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+  binaryTargets   = ["native", "rhel-openssl-1.0.x", "debian-openssl-1.0.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model apikeys {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @unique
+  token     String?
+  status    Boolean   @default(false)
+  createdAt DateTime? @db.DateTime(0)
+  updatedAt DateTime? @db.DateTime(0)
+  users     users     @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "apikeys_userId_fkey")
+}
+
+model devices {
+  id          Int           @id @default(autoincrement())
+  uuid        String        @unique
+  key         String        @unique
+  name        String
+  number      String
+  ready       Boolean       @default(false)
+  webhook     Boolean       @default(false)
+  url         String?
+  expired     Int?          @default(0)
+  userId      Int
+  createdAt   DateTime?     @db.DateTime(0)
+  updatedAt   DateTime?     @db.DateTime(0)
+  autoreply   autoreply[]
+  buttonreply buttonreply[]
+  cart        carts[]
+  users       users         @relation(fields: [userId], references: [id], map: "devices_userId_fkey")
+  groups      groups[]
+  invoices    invoices[]
+  messages    messages[]
+  waauts      waauts[]
+
+  @@index([userId], map: "devices_userId_fkey")
+}
+
+model roles {
+  id        Int         @id @default(autoincrement())
+  name      String
+  createdAt DateTime?   @db.DateTime(0)
+  updatedAt DateTime?   @db.DateTime(0)
+  usermenus usermenus[]
+  users     users[]
+}
+
+model session {
+  id        String    @id
+  sid       String    @unique
+  data      String    @db.Text
+  expiresAt DateTime? @db.DateTime(0)
+}
+
+model users {
+  id        Int         @id @default(autoincrement())
+  name      String
+  email     String      @unique
+  whatsapp  String      @unique
+  password  String
+  roleId    Int
+  status    Boolean     @default(false)
+  photo     String?     @default("photo.png")
+  key       String?
+  createdAt DateTime?   @db.DateTime(0)
+  updatedAt DateTime?   @db.DateTime(0)
+  apikeys   apikeys?
+  autoreply autoreply[]
+  cart      carts[]
+  devices   devices[]
+  invoices  invoices[]
+  roles     roles       @relation(fields: [roleId], references: [id], map: "users_roleId_fkey")
+
+  @@index([roleId], map: "users_roleId_fkey")
+}
+
+model pakets {
+  id        Int        @id @default(autoincrement())
+  name      String
+  durasi    Int
+  harga     Int
+  diskon    Int        @default(0)
+  createdAt DateTime?  @db.DateTime(0)
+  updatedAt DateTime?  @db.DateTime(0)
+  cart      carts[]
+  invoices  invoices[]
+}
+
+model banks {
+  id        Int        @id @default(autoincrement())
+  name      String
+  kode      String
+  pemilik   String
+  norek     String
+  createdAt DateTime?  @db.DateTime(0)
+  updatedAt DateTime?  @db.DateTime(0)
+  invoices  invoices[]
+}
+
+model carts {
+  id         Int     @id @default(autoincrement())
+  paketId    Int
+  devicesKey String
+  userId     Int
+  devices    devices @relation(fields: [devicesKey], references: [key])
+  paket      pakets  @relation(fields: [paketId], references: [id])
+  users      users   @relation(fields: [userId], references: [id])
+
+  @@index([devicesKey], map: "carts_devicesKey_fkey")
+  @@index([paketId], map: "carts_paketId_fkey")
+  @@index([userId], map: "carts_userId_fkey")
+}
+
+model invoices {
+  id        Int            @id @default(autoincrement())
+  uuid      String         @unique
+  kode      String
+  deviceKey String
+  paketId   Int
+  bankId    Int
+  userId    Int
+  total     Int
+  status    statusinvoices @default(UNPAID)
+  expired   Int?
+  createdAt DateTime?      @db.DateTime(0)
+  updatedAt DateTime?      @db.DateTime(0)
+  bank      banks          @relation(fields: [bankId], references: [id])
+  devices   devices        @relation(fields: [deviceKey], references: [key])
+  paket     pakets         @relation(fields: [paketId], references: [id])
+  users     users          @relation(fields: [userId], references: [id])
+
+  @@index([uuid, kode])
+  @@index([bankId], map: "invoices_bankId_fkey")
+  @@index([deviceKey], map: "invoices_deviceKey_fkey")
+  @@index([paketId], map: "invoices_paketId_fkey")
+  @@index([userId], map: "invoices_userId_fkey")
+}
+
+model messages {
+  id        Int       @id @default(autoincrement())
+  uuid      String    @unique
+  deviceKey String
+  messageId String    @unique
+  read      Int       @default(1)
+  noTujuan  String?
+  text      String?   @db.Text
+  isGroup   Boolean   @default(false)
+  secure    Boolean   @default(false)
+  timestamp Int?
+  createdAt DateTime? @db.DateTime(0)
+  updatedAt DateTime? @db.DateTime(0)
+  devices   devices   @relation(fields: [deviceKey], references: [key])
+
+  @@index([deviceKey], map: "messages_deviceKey_fkey")
+}
+
+model groups {
+  id             Int       @id @default(autoincrement())
+  uuid           String    @unique
+  deviceKey      String
+  groupId        String    @unique @db.VarChar(200)
+  groupName      String?   @db.VarChar(100)
+  groupAuthor    String?
+  groupDeskripsi String?
+  groupAnggota   String?   @db.LongText
+  total          Int?      @default(0)
+  createdAt      DateTime? @db.DateTime(0)
+  updatedAt      DateTime? @db.DateTime(0)
+  devices        devices   @relation(fields: [deviceKey], references: [key])
+
+  @@index([groupId])
+  @@index([deviceKey], map: "groups_deviceKey_fkey")
+}
+
+model waauts {
+  id          Int       @id @default(autoincrement())
+  deviceKey   String
+  type        String
+  credentials String?   @db.LongText
+  createdAt   DateTime? @db.DateTime(0)
+  updatedAt   DateTime? @db.DateTime(0)
+  devices     devices   @relation(fields: [deviceKey], references: [key])
+
+  @@index([type])
+  @@index([deviceKey], map: "waauts_deviceKey_fkey")
+}
+
+model menus {
+  id        Int        @id @default(autoincrement())
+  main      String
+  icon      String?
+  link      String
+  urut      Int
+  createdAt DateTime?  @db.DateTime(0)
+  updatedAt DateTime?  @db.DateTime(0)
+  submenus  submenus[]
+}
+
+model submenus {
+  id        Int         @id @default(autoincrement())
+  menusId   Int
+  sub       String
+  link      String
+  urut      Int
+  createdAt DateTime?   @db.DateTime(0)
+  updatedAt DateTime?   @db.DateTime(0)
+  menus     menus       @relation(fields: [menusId], references: [id])
+  usermenus usermenus[]
+
+  @@index([menusId], map: "submenus_menusId_fkey")
+}
+
+model usermenus {
+  id         Int      @id @default(autoincrement())
+  submenusId Int
+  rolesId    Int
+  roles      roles    @relation(fields: [rolesId], references: [id])
+  submenus   submenus @relation(fields: [submenusId], references: [id])
+
+  @@index([rolesId], map: "usermenus_rolesId_fkey")
+  @@index([submenusId], map: "usermenus_submenusId_fkey")
+}
+
+model autoreply {
+  id          Int           @id @default(autoincrement())
+  uuid        String        @unique
+  deviceKey   String
+  type        typereply
+  keyword     String
+  message     String        @db.Text
+  title       String?
+  footer      String?
+  isGroup     Boolean       @default(false)
+  userId      Int
+  createdAt   DateTime?     @db.DateTime(0)
+  updatedAt   DateTime?     @db.DateTime(0)
+  devices     devices       @relation(fields: [deviceKey], references: [key])
+  users       users         @relation(fields: [userId], references: [id])
+  buttonreply buttonreply[]
+
+  @@index([deviceKey], map: "autoreply_deviceKey_fkey")
+  @@index([userId], map: "autoreply_userId_fkey")
+}
+
+model buttonreply {
+  id          Int       @id @default(autoincrement())
+  uuid        String    @unique
+  autoreplyId Int
+  name        String
+  createdAt   DateTime? @db.DateTime(0)
+  updatedAt   DateTime? @db.DateTime(0)
+  deviceKey   String
+  autoreply   autoreply @relation(fields: [autoreplyId], references: [id])
+  devices     devices   @relation(fields: [deviceKey], references: [key])
+
+  @@index([autoreplyId], map: "buttonreply_autoreplyId_fkey")
+  @@index([deviceKey], map: "buttonreply_deviceKey_fkey")
+  @@fulltext([name])
+}
+
+enum statusinvoices {
+  PAID
+  UNPAID
+  EXPIRED
+  FAILED
+}
+
+enum typereply {
+  TEXT
+  BUTTON
+  LIST
+}

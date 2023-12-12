@@ -1,0 +1,79 @@
+<%- include('header') %>
+
+  <div class="row justify-content-center">
+    <div class="col-12">
+      <div class="row">
+        <!-- simple table -->
+        <div class="col-md-12 my-4">
+          <div class="card shadow">
+            <div class="card-body">
+              <% let total=0; %>
+                <% if (cart.length==0) { %>
+                  <div class="text-center">Keranjang masih kosong.</div>
+                  <% } else { %>
+                    <h5 class="card-title">Cart (<%= cart.length %> items)</h5>
+                    <table class="table table-hover">
+                      <thead class="thead-dark">
+                        <tr>
+                          <th>Produk</th>
+                          <th>Device</th>
+                          <th>Harga</th>
+                          <th>Durasi (bulan)</th>
+                          <th>Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <% cart.forEach(row=> { %>
+                          <% total +=parseInt(row.paket.diskon); %>
+                            <tr>
+                              <td>
+                                <%= row.paket.name%>
+                              </td>
+                              <td>
+                                <%= row.devicesKey %>
+                              </td>
+                              <td>Rp. <%= parseInt(row.paket.diskon).toLocaleString('en-ID') %>
+                              </td>
+                              <td class="text-center">
+                                <%= row.paket.durasi %>
+                              </td>
+                              <td>Rp. <%= parseInt(row.paket.diskon).toLocaleString('en-ID') %>
+                              </td>
+                            </tr>
+                            <% }) %>
+                      </tbody>
+                    </table>
+                    <% } %>
+            </div>
+          </div>
+        </div> <!-- simple table -->
+
+      </div>
+      <div class="row">
+        <% if (cart.length>0) { %>
+          <div class="col-md-4 my-4">
+            <div class="card shadow">
+              <div class="card-body">
+                <h5 class="card-title">RINGKASAN</h5>
+                <hr>
+                <p>Total Harga</p>
+                <h2>Rp. <%= total.toLocaleString('en-ID') %>
+                </h2>
+                <hr>
+                <button class="btn btn-primary btn-block" type="button" id="btn-checkout">Checkout <i class="fe fe-send"></i></button>
+              </div>
+            </div>
+          </div> <!-- simple table -->
+          <% } %>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    $(document).ready(function () {
+      $('#btn-checkout').on('click', function (e) {
+        window.location.href = `${SITE_URL}/subscription/checkout`
+      })
+    })
+  </script>
+  <%- include('footer') %>

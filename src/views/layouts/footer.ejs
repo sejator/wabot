@@ -1,0 +1,33 @@
+</div> <!-- .container-fluid -->
+
+<!-- simpan modal disini -->
+</main> <!-- main -->
+</div> <!-- .wrapper -->
+<script src="/assets/js/popper.min.js"></script>
+<script src="/assets/js/moment.min.js"></script>
+<script src="/assets/js/bootstrap.min.js"></script>
+<script src="/assets/js/simplebar.min.js"></script>
+<script src='/assets/js/daterangepicker.js'></script>
+<script src='/assets/js/jquery.stickOnScroll.js'></script>
+<script src='/assets/js/jquery.dataTables.min.js'></script>
+<script src='/assets/js/dataTables.bootstrap4.min.js'></script>
+<script src="/assets/js/jquery.sparkline.min.js"></script>
+<script src="/assets/js/apps.js"></script>
+<script>
+  const url = window.location;
+  // single sidebar menu
+  $('nav.navbar ul > li.nav-item a').filter(function() {
+      return this.href == url;
+  }).parent().addClass('active')
+
+  // sidebar menu and treeview
+  $('nav.navbar ul > li.nav-item a').filter(function() {
+      return this.href == url;
+  }).addClass('menu-target').parent()
+  .addClass('active')
+  .parentsUntil('li')
+  .addClass('active show')
+  .parent('li').addClass('active')
+</script>
+</body>
+</html>

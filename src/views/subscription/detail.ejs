@@ -1,0 +1,104 @@
+<%- include('header') %>
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-12">
+      <div class="card shadow">
+        <div class="card-body p-5">
+          <div class="row mb-3">
+            <div class="col-12 text-center mb-4">
+              <% let color='text-danger' %>
+                <% if (invoice.status=='PAID' ) { %>
+                  <% color='text-success' %>
+                    <% } %>
+
+                      <strong class="<%= color %> text-uppercase h4">
+                        <%= invoice.status %>
+                      </strong>
+                      <br>
+                      <span>
+                        <%= moment(invoice.createdAt).format('DD-MM-YYYY HH:mm:ss'); %>
+                      </span>
+                      <h2 class="mb-0 text-uppercase">#<%= invoice.kode %>
+                      </h2>
+            </div>
+          </div> <!-- /.row -->
+          <table class="table table-borderless table-striped">
+            <thead class="thead-dark">
+              <tr>
+                <th scope="col">Layanan</th>
+                <th scope="col">Harga</th>
+                <th scope="col">Device Key</th>
+                <th scope="col">Nama Device</th>
+                <th scope="col">No Whatsapp</th>
+                <th scope="col">Durasi (bulan)</th>
+                <th scope="col">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <%= invoice.paket.name %>
+                </td>
+                <td>Rp. <%= parseInt(invoice.total).toLocaleString('en-ID') %>
+                </td>
+                <td>
+                  <%= invoice.devices.key %>
+                </td>
+                <td>
+                  <%= invoice.devices.name%>
+                </td>
+                <td>
+                  <%= invoice.devices.number %>
+                </td>
+                <td class="text-center">
+                  <%= invoice.paket.durasi %>
+                </td>
+                <td>Rp. <%= parseInt(invoice.total).toLocaleString('en-ID') %>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="row mt-5">
+            <div class="col-md-6">
+              <p class="text-uppercase mb-2">BANK TRANSFER</p>
+              <p class="mb-4">
+                <strong>
+                  <%= invoice.bank.name %>
+                </strong>
+                <br />
+                <strong>
+                  <%= invoice.bank.norek %>
+                </strong>
+                <br />
+                <span>a/n</span>
+                <br>
+                <strong>
+                  <%= invoice.bank.pemilik %>
+                </strong>
+              </p>
+            </div>
+
+            <div class="col-md-6">
+              <div class="text-right mr-2">
+                <p class="mb-2">
+                  <span class="text-muted h6">Total : </span>
+                  <span class="h3">Rp. <%= parseInt(invoice.total).toLocaleString('en-ID') %></span>
+                </p>
+              </div>
+              <div class="form-group text-right mt-3">
+                <% if (invoice.status=='PAID' ) { %>
+                  <button class="btn btn-secondary">Print</button>
+                  <% } else { %>
+                    <% if (invoice.status=='UNPAID' ) { %>
+                      <a class="btn btn-primary" href="https://api.whatsapp.com/send/?phone=<%= wa_admin %>&text=Konfirmasi+Pembayaran+no+invoice+*<%= invoice.kode %>*" target="_blank">Konfirmasi Pembayaran</a>
+                      <% } %>
+                      <a class="btn btn-outline-warning" href="/subscription/invoice">Back</a>
+                        <% } %>
+              </div>
+            </div>
+          </div> <!-- /.row -->
+        </div> <!-- /.card-body -->
+      </div> <!-- /.card -->
+    </div> <!-- /.col-12 -->
+  </div> <!-- .row -->
+
+  <%- include('footer') %>

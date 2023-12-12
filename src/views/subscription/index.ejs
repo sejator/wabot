@@ -1,0 +1,69 @@
+<%- include('header') %>
+  <div class="row justify-content-center">
+    <div class="col-12">
+      <h2 class="mb-2 page-title">
+        <%= title %>
+      </h2>
+      <div class="row my-4">
+        <!-- Small table -->
+        <div class="col-md-12">
+          <div class="card shadow">
+            <div class="card-header">
+              <div class="d-flex">
+                <h4 class="header-title mr-auto">List Pembelian</h4>
+              </div>
+
+            </div>
+            <div class="card-body">
+              <!-- table -->
+              <table class="table datatables" id="tabel-device">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Device Key</th>
+                    <th>Nama</th>
+                    <th>No Whatsapp</th>
+                    <th>Masa Aktif</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% const today=moment(new Date()).unix() %>
+                    <% devices.forEach((row, i)=> { %>
+                      <tr>
+                        <td>
+                          <%= i + 1 %>
+                        </td>
+                        <td>
+                          <%= row.key %>
+                        </td>
+                        <td>
+                          <%= row.name %>
+                        </td>
+                        <td>
+                          <%= row.number %>
+                        </td>
+                        <td>
+                          <%= moment.unix(row.expired).format('D-MM-YYYY HH:mm:ss'); %>
+                        </td>
+                        <td>
+                          <a class="btn btn-outline-primary" href="/subscription/paket/<%= row.uuid %>"><i class="fe fe-shopping-cart"></i> Renew</a>
+                        </td>
+                      </tr>
+                      <% }) %>
+
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div> <!-- simple table -->
+      </div> <!-- end section -->
+    </div> <!-- .col-12 -->
+  </div> <!-- .row -->
+
+  <script>
+    $(document).ready(function () {
+      $('#tabel-device').DataTable()
+    })
+  </script>
+  <%- include('footer') %>

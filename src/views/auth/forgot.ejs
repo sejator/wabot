@@ -1,0 +1,70 @@
+<%- include("head") %>
+  <form class="col-lg-3 col-md-4 col-10 mx-auto" id="form-forgot">
+    <div class="mx-auto my-4">
+      <h2 class="my-3 text-center">
+        <%= title %>
+      </h2>
+    </div>
+    <p class="text-muted">Masukkan alamat email kamu yang terdaftar.</p>
+    <div class="form-group">
+      <label for="email" class="sr-only">Alamat Email</label>
+      <input type="email" id="email" name="email" class="form-control form-control-lg" required="" autofocus="">
+    </div>
+    <button class="btn btn-primary btn-block" type="submit" id="btn-kirim">Reset Kata Sandi</button>
+    <div class="text-center mt-3">
+      <a class="small" href="/auth">Kembali ke Login!</a>
+    </div>
+    <p class="mt-4 mb-3 text-muted text-center">&copy; 2023</p>
+  </form>
+
+  <script>
+    $('#btn-kirim').on('click', function (e) {
+      e.preventDefault()
+      const form = $('#form-forgot')
+      form.validate({
+        errorElement: 'div',
+        errorClass: 'is-invalid',
+        rules: {
+          email: {
+            required: true,
+            email: true,
+          },
+        },
+      })
+
+      if (form.valid()) {
+        $.ajax({
+          type: 'post',
+          url: form.prop('action'),
+          data: form.serialize(),
+          beforeSend: (res) => {
+            $('#btn-kirim').prop('disabled', true).text('LOADING...')
+          },
+          success: (res) => {
+            swal({
+              title: "Sukses",
+              text: res.data.message,
+              icon: 'success'
+            }).then((value) => {
+              window.location.href = `${SITE_URL}/auth`
+            });
+          },
+          error: (xhr, status, pesan) => {
+            $('#btn-kirim').prop('disabled', false).text('Reset Kata Sandi')
+            if (xhr.status == 400) {
+              const res = xhr.responseJSON
+              const el = res.errors
+              Object.keys(el).forEach((i, val) => {
+                swal("Error", el[i].message, "error");
+              })
+            } else {
+              console.log(xhr)
+              swal("Error", pesan, "error");
+            }
+          }
+        })
+      }
+    })
+  </script>
+
+  <%- include("footer") %>

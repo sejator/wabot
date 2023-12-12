@@ -1,0 +1,27 @@
+<%- include("head") %>
+
+  <div class="col-lg-6 col-md-8 col-10 mx-auto">
+    <% if (data==null) { %>
+      <div class="mx-auto my-4 text-center">
+        <h3>Verifikasi gagal, Token tidak valid.</h3>
+        <img src="/assets/images/alert-error.gif" alt="Error">
+      </div>
+      <div class="text-center mt-3">
+        <a class="btn btn-primary" href="/auth">KEMBALI</a>
+      </div>
+      <% } else { %>
+        <div class="mx-auto my-4 text-center">
+          <h2 class="my-3">
+            <%= title %>
+          </h2>
+          <h5>Selamat akun kamu sudah aktif silahkan login.</h5>
+          <img src="/assets/images/alert-success.gif" alt="Error">
+        </div>
+        <div class="text-center mt-3">
+          <a class="btn btn-primary" href="/auth">LOGIN</a>
+        </div>
+        <% } %>
+          <p class="mt-4 mb-3 text-muted text-center">&copy; 2023</p>
+  </div>
+
+  <%- include("footer") %>
