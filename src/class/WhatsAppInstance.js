@@ -10,7 +10,7 @@ const logger = require("pino")();
 const { prisma } = require("../model");
 const mysqlAuthState = require("../helpers/mysqlAuthState");
 const processbtn = require("../helpers/processbtn");
-const { formatWhatsappGroup, formatWhatsapp } = require("../helpers/formatter");
+const { formatWhatsappGroup, formatWhatsapp, formatNoTelp } = require("../helpers/formatter");
 const startTime = moment(new Date()).millisecond();
 
 let wabot = undefined;
@@ -147,11 +147,34 @@ class WhatsAppInstance {
       // whatsapp sudah ready
       if (isOnline) {
         console.log(`Whatsapp is ready! ${this.key}`);
-        this.#sendNotif(`✅ Mantap...\n\nDevice *${this.key}* sudah terhubung.`);
+        this.#sendNotif(`✅ Mantap...\n\nDevice *${this.key}* terhubung kembali.`);
       }
 
       // pertama kali login dan scan QR Code update status ready device
       if (isNewLogin && qr == undefined) {
+        const [id, format] = this.authState.state.creds.me.id.split(":"); // 628579785xxxx:66@s.whatsapp.net
+        const number = formatNoTelp(id);
+        const ready = await prisma.devices.findFirst({
+          where: {
+            number: number,
+          },
+        });
+        // untuk mencegah login ke wa dalam satu nomor
+        if (ready.ready) {
+          console.log("Whatsapp is ready", ready.number);
+          // ganti nomor tujuan sesuai nomor yang scan
+          tujuan = ready.number;
+          await this.instance?.sock?.logout();
+          await prisma.waauts.deleteMany({
+            where: {
+              deviceKey: this.key,
+            },
+          });
+          this.socket.emit("error", true);
+          this.socket.emit("message", `Whatsapp number <b>${ready.number}</b> is logged in!`);
+          return false;
+        }
+
         console.log(`New session ${this.key}`);
         if (this.socket) {
           this.socket.emit("loading", 0);
@@ -161,8 +184,6 @@ class WhatsAppInstance {
             console.log(`Whatsapp is ready, after new login! ${this.key}`);
             this.socket.emit("ready", true);
             this.socket.emit("message", "Mantap... Whatsapp sudah siap!");
-
-            this.#sendNotif(`✅ Mantap...\n\nDevice *${this.key}* sudah terhubung.`);
           }, 10000);
         }
         await prisma.devices.update({

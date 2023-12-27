@@ -89,6 +89,15 @@
       loading('ready')
     });
 
+    socket.on('error', function (error) {
+      // console.log(ready)
+      const el = $('#qrcode')
+      const btn = $('#btn-scan')
+      el.html(`<img src="${SITE_URL}/assets/images/alert-error.gif" class="rounded" alt="Scan Error">`)
+      btn.prop('disabled', false).html(`Generate QR Code`)
+      stopTimer()
+    });
+
     socket.on('message', function (text) {
       // console.log(text)
       $('#message').html(text);

@@ -149,11 +149,14 @@ class DeviceController {
         },
       });
 
+      if (device.ready) {
+        Socket.delete(device.key); // otomatis di logout setelah update data
+      }
       return res.status(200).json({
         ok: true,
         errors: null,
         data: {
-          message: "Data berhasil diupdate!",
+          message: "Data berhasil diupdate, Silahkan scan QR kembali untuk login!",
           device: device,
         },
       });

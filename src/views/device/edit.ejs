@@ -85,10 +85,10 @@
               title: "Sukses",
               text: res.data.message,
               icon: 'success',
-              timer: 1000,
+              timer: 3000,
               button: false
             }).then((value) => {
-              window.location.reload()
+              window.location.href = `${SITE_URL}/device`
             });
           },
           error: (xhr, status, err) => {
