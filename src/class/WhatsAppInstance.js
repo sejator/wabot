@@ -368,15 +368,15 @@ class WhatsAppInstance {
   async #sendNotif(message) {
     if (wabot == undefined) return false;
     if (config.wabot == this.key) return false;
+    const number = await this.verifyId(tujuan, false);
 
-    try {
-      const [verify] = await wabot.onWhatsApp(tujuan);
-      setTimeout(async () => {
-        await wabot.sendMessage(verify.jid, { text: `${message}\n\nTerima Kasih\n*~ WABOT ~*` });
-      }, 1000);
-    } catch (error) {
-      console.log(error);
-    }
+    setTimeout(async () => {
+      try {
+        await wabot.sendMessage(number, { text: `${message}\n\nTerima Kasih\n*~ WABOT ~*` });
+      } catch (error) {
+        console.log(error);
+      }
+    }, 1000);
   }
 
   /**
