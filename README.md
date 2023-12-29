@@ -1,4 +1,5 @@
 # Whatsapp API by Sejator
+Wabot adalah whatsapp api menggunakan library WhiskeySockets Baileys.
 
 ## Requirement
 - Mysql/Mariadb atau bisa install xampp, laragon, wampp server dll.
@@ -47,3 +48,9 @@ sudo systemctl start wabot
 ```
 sudo systemctl enable wabot
 ```
+
+## Referensi
+Proyek ini hasil dari penyesuain [whatsapp-api-nodejs](https://github.com/salman0ansari/whatsapp-api-nodejs) untuk kebutuhan sendiri.
+
+## Catatan
+Saya tidak dapat menjamin atau bertanggung jawab jika nomor whatsapp diblokir atau diblokir karena menggunakan perangkat lunak ini. WhatsApp tidak mengizinkan bot menggunakan metode tidak resmi di platformnya, jadi hal ini tidak dianggap sepenuhnya aman, silahkan pergunakan dengan bijak. 
