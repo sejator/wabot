@@ -30,8 +30,8 @@ class Message {
 
     try {
       const value = await schema.validateAsync(req.body);
-      const isGroup = value.isGroup == "true" ? true : false;
-      const secure = value.secure == "true" ? true : false;
+      const isGroup = value.isGroup == "true" || value.isGroup == 1 ? true : false;
+      const secure = value.secure == "true" || value.secure == 1 ? true : false;
       const receive = await Socket.sendText(value.key, value.phone, value.message, isGroup);
       const uniq = uuid.v4();
       const number = receive.key?.remoteJid.replace(/\D/g, "");
@@ -83,8 +83,8 @@ class Message {
     let download;
     try {
       const value = await schema.validateAsync(req.body);
-      const isGroup = value.isGroup == "true" ? true : false;
-      const secure = value.secure == "true" ? true : false;
+      const isGroup = value.isGroup == "true" || value.isGroup == 1 ? true : false;
+      const secure = value.secure == "true" || value.secure == 1 ? true : false;
       download = await downloadFile(value.image, "image");
 
       const image = fs.readFileSync(download.data.file);
@@ -143,8 +143,8 @@ class Message {
     let download;
     try {
       const value = await schema.validateAsync(req.body);
-      const isGroup = value.isGroup == "true" ? true : false;
-      const secure = value.secure == "true" ? true : false;
+      const isGroup = value.isGroup == "true" || value.isGroup == 1 ? true : false;
+      const secure = value.secure == "true" || value.secure == 1 ? true : false;
       download = await downloadFile(value.video, "video");
 
       const video = fs.readFileSync(download.data.file);
@@ -205,8 +205,8 @@ class Message {
     let download;
     try {
       const value = await schema.validateAsync(req.body);
-      const isGroup = value.isGroup == "true" ? true : false;
-      const secure = value.secure == "true" ? true : false;
+      const isGroup = value.isGroup == "true" || value.isGroup == 1 ? true : false;
+      const secure = value.secure == "true" || value.secure == 1 ? true : false;
       download = await downloadFile(value.document, "document");
 
       const document = {
@@ -247,8 +247,8 @@ class Message {
 
   static async #saveMessage(uuid, body, receive) {
     // console.log(body);
-    const isGroup = body.isGroup == "true" ? true : false;
-    const secure = body.secure == "true" ? true : false;
+    const isGroup = body.isGroup == "true" || body.isGroup == 1 ? true : false;
+    const secure = body.secure == "true" || body.secure == 1 ? true : false;
     // text
     await prisma.messages.create({
       data: {
