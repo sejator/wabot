@@ -1,5 +1,6 @@
 const { prisma } = require("../model");
 const Joi = require("joi");
+let userId = null;
 
 // middleware belum login
 function isLogedin(req, res, next) {
@@ -38,11 +39,9 @@ async function isAPI(req, res, next) {
           where: {
             token: value,
           },
-          select: {
-            token: true,
-          },
         });
         if (token === null) return helpers.message("Api key tidak valid!");
+        userId = token.userId;
         return value;
       }),
     })
@@ -61,4 +60,8 @@ async function isAPI(req, res, next) {
   }
 }
 
-module.exports = { isLogedin, isAdmin, isAPI };
+function getUserId() {
+  return userId;
+}
+
+module.exports = { isLogedin, isAdmin, isAPI, getUserId };

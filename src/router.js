@@ -18,7 +18,8 @@ const Device = require("./controllers/admin/DeviceController");
 const UserController = require("./controllers/admin/UserController");
 
 // Namespace API
-const Message = require("./controllers/api/Message");
+const ApiMessage = require("./controllers/api/Message");
+const ApiDevice = require("./controllers/api/Device");
 
 router.get("/", HomeController.index);
 
@@ -136,11 +137,19 @@ router.group("/webhook", (router) => {
 // Endpoint Akses API
 router.group("/v1", [isAPI], (router) => {
   router.group("/message", (router) => {
-    router.post("/send-text", Message.sendText);
-    router.post("/send-image", Message.sendImage);
-    router.post("/send-image", Message.sendImage);
-    router.post("/send-video", Message.sendVideo);
-    router.post("/send-document", Message.sendDocument);
+    router.post("/send-text", ApiMessage.sendText);
+    router.post("/send-image", ApiMessage.sendImage);
+    router.post("/send-image", ApiMessage.sendImage);
+    router.post("/send-video", ApiMessage.sendVideo);
+    router.post("/send-document", ApiMessage.sendDocument);
+  });
+  router.group("/device", (router) => {
+    router.get("/", ApiDevice.index);
+    router.get("/:uuid", ApiDevice.show);
+    router.get("/:uuid/init", ApiDevice.init);
+    router.get("/:uuid/scan", ApiDevice.scan);
+    router.post("/", ApiDevice.create);
+    router.delete("/:uuid/logout", ApiDevice.logout);
   });
 });
 

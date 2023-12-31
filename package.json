@@ -1,6 +1,6 @@
 {
   "name": "wabot",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Whatsapp BOT RESTfull API",
   "main": "src/server.js",
   "scripts": {
