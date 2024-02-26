@@ -157,22 +157,28 @@ class WhatsAppInstance {
         const ready = await prisma.devices.findFirst({
           where: {
             number: number,
+            ready: true,
           },
         });
-        // untuk mencegah login ke wa dalam satu nomor
-        if (ready.ready) {
-          console.log("Whatsapp is ready", ready.number);
-          // ganti nomor tujuan sesuai nomor yang scan
-          tujuan = ready.number;
-          await this.instance?.sock?.logout();
-          await prisma.waauts.deleteMany({
-            where: {
-              deviceKey: this.key,
-            },
-          });
-          this.socket.emit("error", true);
-          this.socket.emit("message", `Whatsapp number <b>${ready.number}</b> is logged in!`);
-          return false;
+
+        try {
+          // untuk mencegah login ke wa dalam satu nomor
+          if (ready) {
+            // console.log("Whatsapp is ready", ready.number);
+            // ganti nomor tujuan sesuai nomor yang scan
+            tujuan = ready.number;
+            await this.instance?.sock?.logout();
+            await prisma.waauts.deleteMany({
+              where: {
+                deviceKey: this.key,
+              },
+            });
+            this.socket.emit("error", true);
+            this.socket.emit("message", `Whatsapp number <b>${ready.number}</b> is logged in!`);
+            return false;
+          }
+        } catch (error) {
+          console.log(error);
         }
 
         console.log(`New session ${this.key}`);
@@ -387,8 +393,8 @@ class WhatsAppInstance {
    * @param {*} message
    */
   async #sendNotif(message) {
-    if (wabot == undefined) return false;
-    if (config.wabot == this.key) return false;
+    if (wabot == undefined) return true;
+    if (config.wabot == this.key) return true;
     const number = await this.verifyId(tujuan, false);
 
     setTimeout(async () => {
